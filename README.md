@@ -1,22 +1,22 @@
- secr
-################################################################
- surrealiz3
-################################################################
+ secr   
+################################################################ 
+ surrealiz3   
+################################################################ 
   
-  grab your ECK key with r2secr.arm.ko ( insmod r2secr.arm.ko && dmesg )
+  grab your ECK key with r2secr.arm.ko ( insmod r2secr.arm.ko && dmesg )  i
   or with r2secr.mips.ko ( insmod r2secr.arm.ko && dmesg  ) 
  
  output 
 
- 34399.350000] r2secr : 1ffdf000 
- [34399.352000] r2secr_struct : dffdf000 
- [34399.356000] r2secr_struct->magic : d104ea5b 
- [34399.361000] r2secr_struct->items : dffdf008 
- [34399.365000] nextFreeItem->id : 11f 
- [34399.369000] nextFreeItem->length : 16 
- [34399.372000] nextFreeItem->data : 1ffdf020 
- [34399.377000] data_ptr : dffdf020 
- [34399.380000] XX XX XX XX XX XX XX XX  XX XX XX XX XX XX XX XX  |  ................ 
+ 34399.350000] r2secr : 1ffdf000   
+ [34399.352000] r2secr_struct : dffdf000   
+ [34399.356000] r2secr_struct->magic : d104ea5b   
+ [34399.361000] r2secr_struct->items : dffdf008   
+ [34399.365000] nextFreeItem->id : 11f   
+ [34399.369000] nextFreeItem->length : 16   
+ [34399.372000] nextFreeItem->data : 1ffdf020   
+ [34399.377000] data_ptr : dffdf020   
+ [34399.380000] XX XX XX XX XX XX XX XX  XX XX XX XX XX XX XX XX  |  ................   
 
  grab you eripv2 partition ,mtd5 for offline processing dd if=/dev/mtd5 of=/tmp/mtd5.dd   
  copy it to where you are able to run this python script 
