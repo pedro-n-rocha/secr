@@ -33,4 +33,8 @@
  OSIK 
  EIK 
 
+ ** lime.arm.ko to dump memory , so :  
+ 
+ insmod lime.arm.ko "path="/tmp/run/mountd/sda1" format=raw"
+
 
