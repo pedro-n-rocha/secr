@@ -4,7 +4,7 @@
 ################################################################ 
   
   grab your ECK key with r2secr.arm.ko ( insmod r2secr.arm.ko && dmesg )  
-  or with r2secr.mips.ko ( insmod r2secr.arm.ko && dmesg  )   
+  or with r2secr.mips.ko ( insmod r2secr.mips.ko && dmesg  )   
  
  output 
 
