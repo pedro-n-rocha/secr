@@ -157,7 +157,6 @@ def get_idx(IDx):
         if(ID == 0xffff):
             break
         if(ID == IDx):
-            hexdump(item)
             rip_item = Map(
                     id=IDx,
                     addr =  struct.unpack('>L',item[2:6])[0]^0x20000 , 
