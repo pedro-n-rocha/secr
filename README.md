@@ -37,4 +37,26 @@
  
  insmod lime.arm.ko "path="/tmp/run/mountd/sda1" format=raw"
 
+** ripdrv.arm.ko 
+
+remove original ripdrv.ko 
+
+rmmod keymanager
+rmmod ripdrv.ko 
+insmod ripdrv.arm.ko 
+
+all private cryptos exposed now on /proc/rip 
+efu stuff on /proc/efu 
+
+
+
+
+
+
+
+
+
+
+
+
 
