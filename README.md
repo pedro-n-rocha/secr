@@ -39,14 +39,14 @@
 
 ** ripdrv.arm.ko 
 
-remove original ripdrv.ko 
+remove original ripdrv.ko   
 
-rmmod keymanager
-rmmod ripdrv.ko 
-insmod ripdrv.arm.ko 
+rmmod keymanager  
+rmmod ripdrv.ko   
+insmod ripdrv.arm.ko   
 
-all private cryptos exposed now on /proc/rip 
-efu stuff on /proc/efu 
+all private cryptos exposed now on /proc/rip   
+efu stuff on /proc/efu   
 
 
 
