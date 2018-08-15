@@ -1,4 +1,4 @@
-#!/urs/bin/python2
+#!/usr/bin/python2
 ################################################################
 # surrealiz3
 ################################################################
@@ -176,8 +176,8 @@ def load_eik(pub_mod):
 
 def dump(id,data):
     fn = "%s_0x%.4x-%s "%(RIPS[id],id,fsh[0:8])if id in RIPS else"RIP_UNK_0x%.4x-%s"%(id,fsh[0:8]) # .. :P 
-    print "dumping to file  %s ...." % fn 
-    f = open(fn,'wb')
+    print "dumping to file  %s ...." % fn.strip() 
+    f = open(fn.strip(),'wb')
     f.write(data)
     f.close()
     hexdump(data)
