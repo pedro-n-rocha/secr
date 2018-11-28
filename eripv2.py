@@ -147,8 +147,7 @@ def parse_rip(key):
         return RIPS[key]
     return "RIP_ID_UNKN: 0x%04x" % key
 
-def get_idx(IDx):
-    x=1 
+def get_idx(IDx,x):
     ID=0x0000
     while (ID != 0xffff):
         item = buff[len(buff)-(18*x):(len(buff)-(18*x)+18)]
@@ -192,17 +191,17 @@ def eripv2_walk():
         ID = struct.unpack('>H',item[0:2])[0]
         if(ID == 0xffff):
             break
-        item = get_idx(ID) # double walking for god sake fixit .... 
+        item = get_idx(ID,x-1) # walk ahead from found tag
         if(~item.attr_hi &  ATTR_CRYPTO):
             if(~item.attr_hi &  ATTR_ECK_ENCR):
                 dec = decrypt_aes_sigret(item.data,eck)
                 if(~item.attr_hi &  ATTR_EIK_SIGN):
                     print "%s EIK_SIGNED and ECK_ENCR" % parse_rip(ID)
                     if signverify(item.id,dec.data,dec.signature):
-                        print 'SIG: OK'
+                        print 'SIG: OK (proves provided ECK is correct)'
                         dump(item.id,dec.data)
                     else:
-                        print 'SIG: NOK , ECK wrong ???!! not dumping contents!!'
+                        print 'SIG: NOK (ECK wrong ???!! not dumping contents!!)'
                 else:
                     print "%s ECK_ENCR only" % parse_rip(ID)
                     dump(item.id,dec.data)
@@ -211,10 +210,10 @@ def eripv2_walk():
                     print "%s EIK_SIGNED only" % parse_rip(ID) 
                     dec = sigret(item.data);
                     if signverify(item.id,dec.data,dec.signature):
-                        print 'SIG: OK'
+                        print 'SIG: OK (proves parsed EIK is correct)'
                         dump(item.id,dec.data)
                     else:
-                        print 'SIG: NOK , ECK wrong ???!! not dumping contents!!'
+                        print 'SIG: NOK (EIK wrong ???!! not dumping contents!!)'
 
             if(~item.attr_hi &  ATTR_BEK_ENCR):
                 if(item.attr_hi &  ATTR_MCV_SIGN):
@@ -235,7 +234,7 @@ def eripv2_walk():
 def init():
     global fsh
     fsh = sha256_checksum(fname)
-    item =  get_idx(xRIPS['RIP_ID_EIK'])
+    item =  get_idx(xRIPS['RIP_ID_EIK'],1)
     if(item != None):
         load_eik(item.data[:256])
     return 
