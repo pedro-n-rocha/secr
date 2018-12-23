@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 ################################################################
 # surrealiz3
 ################################################################
@@ -30,16 +30,16 @@ fncfg   = tmp['cfg']
 fcfg = open(fncfg,'rb')
 
 
-print "-------------------------------- HDR ---------------------"
+print("-------------------------------- HDR ---------------------")
 l = fcfg.readline()
 hexdump(l)
 while l:
     l = fcfg.readline()
     hexdump(l)
-    if l =="\n":
+    if l == b"\n":
         stcry = fcfg.tell()
         break
-print ""
+print("")
 
 fcfg.seek(0)
 
@@ -51,23 +51,23 @@ randb = frandb.read()
 frandb.close()
 
 randb_key = randb[0:32]
-print "-------------------------------- AESk --------------------"
+print("-------------------------------- AESk --------------------")
 hexdump(randb_key)
-print ""
+print("")
 
 randb_sigk = randb[0:64]
 
-print "-------------------------------- SIGk --------------------"
+print("-------------------------------- SIGk --------------------")
 hexdump(randb_sigk)
-print ""
+print("")
 
 cfg_crypt_blk = cfg[stcry:-20]
 IV = cfg_crypt_blk[0:16]
 
 cfg_digest_blk = cfg[-20:]
-print "-------------------------------- DIGST -------------------"
+print("-------------------------------- DIGST -------------------")
 hexdump(cfg_digest_blk)
-print ""
+print("")
 
 aes = AES.new(randb_key, AES.MODE_CBC, IV)
 dec = aes.decrypt(cfg_crypt_blk[16:])
@@ -75,14 +75,14 @@ dec = aes.decrypt(cfg_crypt_blk[16:])
 hash = hmac.new(randb_sigk,cfg[:-20],sha1)
 digst = hash.digest()
 
-print "-------------------------------- CDIGST ------------------"
+print("-------------------------------- CDIGST ------------------")
 hexdump(digst)
-print ""
+print("")
 
 if cfg_digest_blk != digst:
-    print " [*] !!! HMAC-SHA1 failed ,something is wrong or no sig check is required !!! check plain contents"
+    print(" [*] !!! HMAC-SHA1 failed ,something is wrong or no sig check is required !!! check plain contents")
 
-print "\n [*] dumping to file: %s" % fncfg + ".plain\n" 
+print("\n [*] dumping to file: %s" % fncfg + ".plain\n") 
 f = open(fncfg+'.plain','wb')
 f.write(cfg[:stcry])
 f.write(dec)
