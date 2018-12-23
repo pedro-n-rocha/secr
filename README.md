@@ -1,13 +1,16 @@
- secr   
+
+secr by surrealiz3 
+
 ################################################################ 
- surrealiz3   
-################################################################ 
+
 disclaimer : use at your own risk 
+
 ** How to get firmware key
 
 1. Get a USB stick and copy all the .ko files to it
 
 2. Connect a USB drive to the router and config that it is mounted correctly i.e. 
+```
 root@mygateway:~# ls -la /mnt/usb/USB-A1/*.ko
 -rwxrwxrwx    1 root     root         10638 Dec 23  2018 /mnt/usb/USB-A1/lime.arm.ko
 -rwxrwxrwx    1 root     root          4531 Dec 23  2018 /mnt/usb/USB-A1/r2secr.arm.ko
@@ -15,17 +18,28 @@ root@mygateway:~# ls -la /mnt/usb/USB-A1/*.ko
 -rwxrwxrwx    1 root     root          4266 Dec 23  2018 /mnt/usb/USB-A1/r2secr.mips.openwrt.test.ko
 -rwxrwxrwx    1 root     root         37183 Dec 23  2018 /mnt/usb/USB-A1/ripdrv.arm.ko
 root@mygateway:~#
+```
 
 3. cd /mnt/usb/USB-A1/
 
 4. Grab your ECK key:
-On ARM: insmod r2secr.arm.ko && dmesg | tail -n 20 && rmmod r2secr
+On ARM: 
+```
+insmod r2secr.arm.ko && dmesg | tail -n 20 && rmmod r2secr
+```
 
-On MIPS: insmod r2secr.mips.openwrt.test.ko && dmesg | tail -n 20 && rmmod r2secr
+On MIPS: 
+```
+insmod r2secr.mips.openwrt.test.ko && dmesg | tail -n 20 && rmmod r2secr
+```
 
-On MIPS (if previous failed): insmod r2secr.mips.ko && dmesg | tail -n 20 && rmmod r2secr
+On MIPS (if previous failed): 
+```
+insmod r2secr.mips.ko && dmesg | tail -n 20 && rmmod r2secr
+```
 
 You will get output like:
+```
 root@mygateway:/tmp/run/mountd/sda1# insmod r2secr.mips.openwrt.test.ko && dmesg | tail -n 10 && rmmod r2secr
 [ 2554.482000] module cleanup
 [ 2574.716000] r2secr : affdf800
@@ -38,16 +52,20 @@ root@mygateway:/tmp/run/mountd/sda1# insmod r2secr.mips.openwrt.test.ko && dmesg
 [ 2574.747000] data_ptr : affdf820
 [ 2574.750000] XX XX XX XX XX XX XX XX  XX XX XX XX XX XX XX XX  |  ................
 root@mygateway:/tmp/run/mountd/sda1#
+```
 
 5. Grab your eripv2 partition (mtd5 normally, confirm with 'cat /proc/mtd') for offline processing (should go to USB stick if steps have been followed)
+```
 dd if=/dev/mtd5 of=mtd5.dd
+```
 
 6. Copy it to a computer where you are able to run this python script with the key from above (with spaces removed)
+```
 python eripv2.py --eripv2 mtd5.dd --eckey XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
 
 The secrets will be displayed on screen and dumped unencrypted contents to files ( messy :P )  
-OSCK key file is of relevance to decrypt encrypted rbi files with another script ()
-
+OSCK key file is of relevance to decrypt encrypted rbi files with another script
 Relevant : 
 OSCK 
 OSIK 
@@ -60,12 +78,16 @@ EIK
 9. Inspect .bin root file system using 7-Zip or binwalk
 
 ** lime.arm.ko to dump memory on platforms with memory dump disabled:  
+```
 insmod lime.arm.ko "path="/tmp/run/mountd/sda1" format=raw"
+```
 
 ** ripdrv.arm.ko which does not hide values like the standard one!
+```
 rmmod keymanager  
 rmmod ripdrv.ko   
 insmod ripdrv.arm.ko
+```
 
 All private cryptos exposed now at /proc/rip   
 EFU stuff at /proc/efu
