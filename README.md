@@ -1,62 +1,93 @@
- secr   
+
+secr by surrealiz3 
+
 ################################################################ 
- surrealiz3   
-################################################################ 
-  
-  grab your ECK key with r2secr.arm.ko ( insmod r2secr.arm.ko && dmesg )  
-  or with r2secr.mips.ko ( insmod r2secr.mips.ko && dmesg  )   
- 
- output 
 
- 34399.350000] r2secr : 1ffdf000   
- [34399.352000] r2secr_struct : dffdf000   
- [34399.356000] r2secr_struct->magic : d104ea5b   
- [34399.361000] r2secr_struct->items : dffdf008   
- [34399.365000] nextFreeItem->id : 11f   
- [34399.369000] nextFreeItem->length : 16   
- [34399.372000] nextFreeItem->data : 1ffdf020   
- [34399.377000] data_ptr : dffdf020   
- [34399.380000] XX XX XX XX XX XX XX XX  XX XX XX XX XX XX XX XX  |  ................   
+disclaimer : use at your own risk 
 
- grab you eripv2 partition ,mtd5 for offline processing dd if=/dev/mtd5 of=/tmp/mtd5.dd   
- copy it to where you are able to run this python script 
+** How to get firmware key
 
- run: python eripv2.py --eripv2 mtd5.dd --eckey XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+1. Get a USB stick and copy all the .ko files to it
 
- find the secrets on screen and dumped unencrypted contents to files ( messy :P )  
- OCK key file is of relevance to decrypt encrypted rbi files with another script 
- disclaimer : use at your own risk 
+2. Connect a USB drive to the router and config that it is mounted correctly i.e. 
+```
+root@mygateway:~# ls -la /mnt/usb/USB-A1/*.ko
+-rwxrwxrwx    1 root     root         10638 Dec 23  2018 /mnt/usb/USB-A1/lime.arm.ko
+-rwxrwxrwx    1 root     root          4531 Dec 23  2018 /mnt/usb/USB-A1/r2secr.arm.ko
+-rwxrwxrwx    1 root     root          3985 Dec 23  2018 /mnt/usb/USB-A1/r2secr.mips.ko
+-rwxrwxrwx    1 root     root          4266 Dec 23  2018 /mnt/usb/USB-A1/r2secr.mips.openwrt.test.ko
+-rwxrwxrwx    1 root     root         37183 Dec 23  2018 /mnt/usb/USB-A1/ripdrv.arm.ko
+root@mygateway:~#
+```
 
- relevant : 
+3. cd /mnt/usb/USB-A1/
 
- OSCK 
- OSIK 
- EIK 
+4. Grab your ECK key:
+On ARM: 
+```
+insmod r2secr.arm.ko && dmesg | tail -n 20 && rmmod r2secr
+```
 
- ** lime.arm.ko to dump memory , so :  
- 
- insmod lime.arm.ko "path="/tmp/run/mountd/sda1" format=raw"
+On MIPS: 
+```
+insmod r2secr.mips.openwrt.test.ko && dmesg | tail -n 20 && rmmod r2secr
+```
 
-** ripdrv.arm.ko 
+On MIPS (if previous failed): 
+```
+insmod r2secr.mips.ko && dmesg | tail -n 20 && rmmod r2secr
+```
 
-remove original ripdrv.ko   
+You will get output like:
+```
+root@mygateway:/tmp/run/mountd/sda1# insmod r2secr.mips.openwrt.test.ko && dmesg | tail -n 10 && rmmod r2secr
+[ 2554.482000] module cleanup
+[ 2574.716000] r2secr : affdf800
+[ 2574.719000] r2secr_struct : affdf800
+[ 2574.726000] r2secr_struct->magic : d104ea5b
+[ 2574.731000] r2secr_struct->items : affdf808
+[ 2574.735000] nextFreeItem->id : 11f
+[ 2574.738000] nextFreeItem->length : 16
+[ 2574.742000] nextFreeItem->data : affdf820
+[ 2574.747000] data_ptr : affdf820
+[ 2574.750000] XX XX XX XX XX XX XX XX  XX XX XX XX XX XX XX XX  |  ................
+root@mygateway:/tmp/run/mountd/sda1#
+```
 
+5. Grab your eripv2 partition (mtd5 normally, confirm with 'cat /proc/mtd') for offline processing (should go to USB stick if steps have been followed)
+```
+dd if=/dev/mtd5 of=mtd5.dd
+```
+
+6. Copy it to a computer where you are able to run this python script with the key from above (with spaces removed)
+```
+python eripv2.py --eripv2 mtd5.dd --eckey XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+The secrets will be displayed on screen and dumped unencrypted contents to files ( messy :P )  
+OSCK key file is of relevance to decrypt encrypted rbi files with another script
+Relevant : 
+OSCK 
+OSIK 
+EIK 
+
+7. Copy RIP_ID_OSCK_0x0121-... to ModemType.osck
+
+8. Now use blidec_enhanced.py with file from last step and .rbi firmware to decrypt to .bin
+
+9. Inspect .bin root file system using 7-Zip or binwalk
+
+** lime.arm.ko to dump memory on platforms with memory dump disabled:  
+```
+insmod lime.arm.ko "path="/tmp/run/mountd/sda1" format=raw"
+```
+
+** ripdrv.arm.ko which does not hide values like the standard one!
+```
 rmmod keymanager  
 rmmod ripdrv.ko   
-insmod ripdrv.arm.ko   
+insmod ripdrv.arm.ko
+```
 
-all private cryptos exposed now on /proc/rip   
-efu stuff on /proc/efu   
-
-
-
-
-
-
-
-
-
-
-
-
-
+All private cryptos exposed now at /proc/rip   
+EFU stuff at /proc/efu

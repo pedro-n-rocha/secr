@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 ################################################################
 # surrealiz3
 ################################################################
@@ -112,7 +112,7 @@ RIPS = {
         0x4001:  'RIP_ID_ID_DECT_CFG'                      
 
 }
-xRIPS=dict(zip(RIPS.values(),RIPS.keys()))
+xRIPS=dict(list(zip(list(RIPS.values()),list(RIPS.keys()))))
 
 class Map(dict):
     def __init__(self, **kwargs):
@@ -132,8 +132,8 @@ def decrypt_aes_sigret(data,key):
    IV  = data[0:16]
    encdata = data[16:]
    aes = AES.new(key, AES.MODE_CBC, IV)
-   dec = aes.decrypt(str(encdata))
-   pad = struct.unpack('>B',dec[len(dec)-1])[0]
+   dec = aes.decrypt(encdata)
+   pad = struct.unpack('>B',bytes([dec[len(dec)-1]]))[0]
    sz = (len(dec) - pad ) -256
    return Map( data = dec[0:sz] , signature = dec[sz:sz+256]) 
 
@@ -169,13 +169,13 @@ def get_idx(IDx,x):
 
 def load_eik(pub_mod):
     global eik
-    e = long('10001', 16)
-    n = long(hexlify(pub_mod),16)
+    e = int('10001', 16)
+    n = int(hexlify(pub_mod),16)
     eik = construct((n, e))
 
 def dump(id,data):
     fn = "%s_0x%.4x-%s "%(RIPS[id],id,fsh[0:8])if id in RIPS else"RIP_UNK_0x%.4x-%s"%(id,fsh[0:8]) # .. :P 
-    print "dumping to file  %s ...." % fn.strip() 
+    print("dumping to file  %s ...." % fn.strip()) 
     f = open(fn.strip(),'wb')
     f.write(data)
     f.close()
@@ -196,40 +196,40 @@ def eripv2_walk():
             if(~item.attr_hi &  ATTR_ECK_ENCR):
                 dec = decrypt_aes_sigret(item.data,eck)
                 if(~item.attr_hi &  ATTR_EIK_SIGN):
-                    print "%s EIK_SIGNED and ECK_ENCR" % parse_rip(ID)
+                    print("%s EIK_SIGNED and ECK_ENCR" % parse_rip(ID))
                     if signverify(item.id,dec.data,dec.signature):
-                        print 'SIG: OK (proves provided ECK is correct)'
+                        print('SIG: OK (proves provided ECK is correct)')
                         dump(item.id,dec.data)
                     else:
-                        print 'SIG: NOK (ECK wrong ???!! not dumping contents!!)'
+                        print('SIG: NOK (ECK wrong ???!! not dumping contents!!)')
                 else:
-                    print "%s ECK_ENCR only" % parse_rip(ID)
+                    print("%s ECK_ENCR only" % parse_rip(ID))
                     dump(item.id,dec.data)
             else:
                 if(~item.attr_hi &  ATTR_EIK_SIGN):
-                    print "%s EIK_SIGNED only" % parse_rip(ID) 
+                    print("%s EIK_SIGNED only" % parse_rip(ID)) 
                     dec = sigret(item.data);
                     if signverify(item.id,dec.data,dec.signature):
-                        print 'SIG: OK (proves parsed EIK is correct)'
+                        print('SIG: OK (proves parsed EIK is correct)')
                         dump(item.id,dec.data)
                     else:
-                        print 'SIG: NOK (EIK wrong ???!! not dumping contents!!)'
+                        print('SIG: NOK (EIK wrong ???!! not dumping contents!!)')
 
             if(~item.attr_hi &  ATTR_BEK_ENCR):
                 if(item.attr_hi &  ATTR_MCV_SIGN):
-                    print "%s MCV_SIGNED and BEK_ENCR !UNSUPPORTED!!" % parse_rip(ID)
+                    print("%s MCV_SIGNED and BEK_ENCR !UNSUPPORTED!!" % parse_rip(ID))
                     item.data = data[0:len(data)-256] # remove sig rsa 256 
                 else:
-                    print "%s BEK_ENCR only !!UNSUPPORTED!!"  % parse_rip(ID) #no bek yet :/ 
+                    print("%s BEK_ENCR only !!UNSUPPORTED!!"  % parse_rip(ID)) #no bek yet :/ 
             else: 
                 if(~item.attr_hi &  ATTR_MCV_SIGN):
-                    print "%s MCV_SIGNED only" % parse_rip(ID) 
+                    print("%s MCV_SIGNED only" % parse_rip(ID)) 
                     dec = sigret(item.data) 
                     dump(item.id,dec.data) # no integrity check ... 
         else:
-            print "%s no_crypt" % parse_rip(ID)
+            print("%s no_crypt" % parse_rip(ID))
             dump(item.id,item.data)
-        print""
+        print("")
 
 def init():
     global fsh
