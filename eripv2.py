@@ -59,7 +59,7 @@ ATTR_MCV_SIGN = 0x04000000
 ATTR_BEK_ENCR = 0x02000000 
 ATTR_CRYPTO = (ATTR_EIK_SIGN | ATTR_ECK_ENCR | ATTR_MCV_SIGN | ATTR_BEK_ENCR)
 
-eck = unhexlify(tmp['eckey'])
+eck = unhexlify(tmp['eckey'].replace(' ', '').replace('"', '').strip())
 eik = None
 fsh = ''
 
@@ -174,7 +174,7 @@ def load_eik(pub_mod):
     eik = construct((n, e))
 
 def dump(id,data):
-    fn = "%s_0x%.4x-%s "%(RIPS[id],id,fsh[0:8])if id in RIPS else"RIP_UNK_0x%.4x-%s"%(id,fsh[0:8]) # .. :P 
+    fn = "%s_0x%.4x-%s" %(RIPS[id],id,fsh[0:8]) if id in RIPS else "RIP_UNK_0x%.4x-%s" %(id,fsh[0:8]) # .. :P
     print("dumping to file  %s ...." % fn.strip()) 
     f = open(fn.strip(),'wb')
     f.write(data)
