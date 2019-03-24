@@ -42,9 +42,11 @@ import hashlib
 parser = argparse.ArgumentParser()
 parser.add_argument('--eripv2', help='eripv2 dump file name ( grab with dd if=/dev/mtd5 of=/tmp/mtd5.bin)')
 parser.add_argument('--eckey' , help='key file grab with kernel module for your arch (insmod r2secrets.arm && dmesg')
+parser.add_argument('--debug' , help='enable debugging')
 
 args = parser.parse_args()
 tmp = vars(args)
+DEBUG=False if tmp['debug'] == None else True
 fname = tmp['eripv2'] 
 f = open(fname , 'rb')
 data = f.read()
@@ -109,7 +111,9 @@ RIPS = {
         0x0125:  'RIP_ID_UNLOCK_TAG',                      
         0x0127:  'RIP_ID_OLYMPUS_IK',                      
         0x0128:  'RIP_ID_OLYMPUS_CK',                      
-        0x4001:  'RIP_ID_ID_DECT_CFG'                      
+        0x4001:  'RIP_ID_ID_DECT_CFG',
+        0x8001:  'RIP_ID_PRODUCT_ID',
+        0x8003:  'RIP_ID_VARIANT_ID'
 
 }
 xRIPS=dict(list(zip(list(RIPS.values()),list(RIPS.keys()))))
@@ -163,7 +167,7 @@ def get_idx(IDx,x):
                     attr_hi = (struct.unpack('>L',item[10:14])[0]) , 
                     length= struct.unpack('>L',item[14:18])[0],
                     )
-            rip_item['data'] = buff[rip_item.addr:rip_item.addr + rip_item.length] 
+            rip_item['data'] = buff[rip_item.addr:rip_item.addr + rip_item.length]
             return rip_item
     return None
 
@@ -173,8 +177,10 @@ def load_eik(pub_mod):
     n = int(hexlify(pub_mod),16)
     eik = construct((n, e))
 
-def dump(id,data):
+def dump(id,data,pos=None):
     fn = "%s_0x%.4x-%s" %(RIPS[id],id,fsh[0:8]) if id in RIPS else "RIP_UNK_0x%.4x-%s" %(id,fsh[0:8]) # .. :P
+    if DEBUG & pos != None:
+        fn = "%.2x_" % pos + fn
     print("dumping to file  %s ...." % fn.strip()) 
     f = open(fn.strip(),'wb')
     f.write(data)
@@ -192,6 +198,7 @@ def eripv2_walk():
         if(ID == 0xffff):
             break
         item = get_idx(ID,x-1) # walk ahead from found tag
+        print("%.4x" % item.addr)
         if(~item.attr_hi &  ATTR_CRYPTO):
             if(~item.attr_hi &  ATTR_ECK_ENCR):
                 dec = decrypt_aes_sigret(item.data,eck)
@@ -199,21 +206,25 @@ def eripv2_walk():
                     print("%s EIK_SIGNED and ECK_ENCR" % parse_rip(ID))
                     if signverify(item.id,dec.data,dec.signature):
                         print('SIG: OK (proves provided ECK is correct)')
-                        dump(item.id,dec.data)
+                        dump(item.id,dec.data,x-1)
                     else:
                         print('SIG: NOK (ECK wrong ???!! not dumping contents!!)')
+                        if DEBUG:
+                            dump(item.id,dec.data,x-1)
                 else:
                     print("%s ECK_ENCR only" % parse_rip(ID))
-                    dump(item.id,dec.data)
+                    dump(item.id,dec.data,x-1)
             else:
                 if(~item.attr_hi &  ATTR_EIK_SIGN):
                     print("%s EIK_SIGNED only" % parse_rip(ID)) 
                     dec = sigret(item.data);
                     if signverify(item.id,dec.data,dec.signature):
                         print('SIG: OK (proves parsed EIK is correct)')
-                        dump(item.id,dec.data)
+                        dump(item.id,dec.data,x-1)
                     else:
                         print('SIG: NOK (EIK wrong ???!! not dumping contents!!)')
+                        if DEBUG:
+                            dump(item.id,dec.data,x-1)
 
             if(~item.attr_hi &  ATTR_BEK_ENCR):
                 if(item.attr_hi &  ATTR_MCV_SIGN):
@@ -225,10 +236,10 @@ def eripv2_walk():
                 if(~item.attr_hi &  ATTR_MCV_SIGN):
                     print("%s MCV_SIGNED only" % parse_rip(ID)) 
                     dec = sigret(item.data) 
-                    dump(item.id,dec.data) # no integrity check ... 
+                    dump(item.id,dec.data,x-1) # no integrity check ... 
         else:
             print("%s no_crypt" % parse_rip(ID))
-            dump(item.id,item.data)
+            dump(item.id,item.data,x-1)
         print("")
 
 def init():
