@@ -25,6 +25,7 @@ root@mygateway:~#
 4. uname -a
 
 5. Grab your ECK key:
+
 On ARM (if linux 4.1):
 ```
 insmod r2secr.arm.4.1.ko && dmesg | tail -n 20 && rmmod r2secr
