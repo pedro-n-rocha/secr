@@ -68,7 +68,8 @@ root@mygateway:/tmp/run/mountd/sda1# insmod r2secr.mips.3.4.ko && dmesg | tail -
 root@mygateway:/tmp/run/mountd/sda1#
 ```
 
-If it didn't you need to grab a full RAM dump with LiME and take the ECKey from it. [Read about LiME usage here.](https://github.com/504ensicsLabs/LiME)
+If it didn't you need to grab a full RAM dump with LiME and take the ECKey from it.
+Read further in this page about how to to it.
 
 6. Grab your eripv2 partition (mtd5 normally, confirm with 'cat /proc/mtd') for offline processing (should go to USB stick if steps have been followed)
 ```
@@ -107,6 +108,9 @@ On ARM (if Linux 3.4.11-rt19):
 # Double check the "path=..." exists before running this command
 insmod lime.arm.3.4.11-rt19.ko "path="/tmp/run/mountd/sda1" format=raw"
 ```
+
+[Read more about LiME usage on 504ensicsLabs/LiME.](https://github.com/504ensicsLabs/LiME)
+
 
 ** How to expose all rip values in /proc
 ```
