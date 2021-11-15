@@ -106,7 +106,7 @@ On some newer firmwares /dev/mem is not exposed or r2secr kernel symbol is not e
 On ARM (if Linux 3.4.11-rt19):
 ```
 # Double check the "path=..." exists before running this command
-insmod lime.arm.3.4.11-rt19.ko "path="/tmp/run/mountd/sda1" format=raw"
+insmod lime.arm.3.4.11-rt19.ko "path="/tmp/run/mountd/sda1/ram.dump" format=raw"
 ```
 
 [Read more about LiME usage on 504ensicsLabs/LiME.](https://github.com/504ensicsLabs/LiME)
