@@ -35,6 +35,23 @@ On ARM (e.g. linux 4.1.38):
 insmod r2secr.arm.4.1.38.ko && dmesg | tail -n 20 && rmmod r2secr
 ```
 
+On ARM (BCM963138 gateways, e.g. Technicolor VBNT-S, linux 4.1.52):
+
+these kernels export the r2secr symbol as NULL and only pass the secrets
+address on the kernel command line (`.r2secr=0x1ffdf000`), so the 4.1.38
+module loads but then hexdumps garbage forever. `r2secr.arm.4.1.52.ko` is
+the 4.1.38 module with a rewritten vermagic and the struct address patched
+in; it works as-is on boards whose cmdline carries `.r2secr=0x1ffdf000`:
+
+```
+insmod r2secr.arm.4.1.52.ko && dmesg | tail -n 20 && rmmod r2secr
+```
+
+Check `cat /proc/cmdline` first: if your `.r2secr=0x...` address differs,
+either rebuild from `src/r2secrets.arm` (the source now falls back to the
+cmdline value when the symbol is NULL and refuses to dump on a bad magic)
+or patch the little-endian 4-byte pointer at offset 660 of the .ko.
+
 On ARM (if linux 3.4.11-rt19):
 ```
 insmod r2secr.arm.3.4.11-rt19.ko && dmesg | tail -n 20 && rmmod r2secr

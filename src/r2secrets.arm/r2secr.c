@@ -1,6 +1,7 @@
 #include <linux/module.h>	/* Needed by all modules */
 #include <linux/kernel.h>	/* Needed for KERN_INFO */
 #include <linux/init.h>
+#include <linux/string.h>
 
 #include "include/rip_ids.h"
 #include "include/rip2_crypto.h"
@@ -48,11 +49,30 @@ static int __init k_module_init(void)
 {
     extern unsigned char *r2secr;
 		unsigned char * data_ptr; 
-    Rip2Secrets *r2secr_struct = (Rip2Secrets *)(rip2_crypto_phys_to_virt(r2secr));
+    unsigned long r2secr_ptr = (unsigned long) r2secr;
 
-		printk("r2secr : %lx \n" , (unsigned long ) r2secr ) ;
+		/* Some firmwares (e.g. the Broadcom BCM963138 linux 4.1.52 build)
+		 * export the r2secr symbol as NULL and only pass the address of the
+		 * secrets struct on the kernel command line (.r2secr=0x...), fall
+		 * back to it. Without a valid pointer the hexdump loop below walks
+		 * uninitialised memory forever and the module is stuck in init. */
+		if (!r2secr_ptr) {
+				const char *p = strstr(boot_command_line, ".r2secr=0x");
+				if (p)
+						r2secr_ptr = simple_strtoul(p + 10, NULL, 16);
+		}
+
+    Rip2Secrets *r2secr_struct = (Rip2Secrets *)(rip2_crypto_phys_to_virt((void *) r2secr_ptr));
+
+		printk("r2secr : %lx \n" , r2secr_ptr ) ;
 		printk("r2secr_struct : %lx \n" , (unsigned long ) r2secr_struct ) ;
 		printk("r2secr_struct->magic : %lx \n" , (unsigned long ) r2secr_struct->magic ) ;
+
+		if (r2secr_struct->magic != RIP2SECRETSMAGIC) {
+				printk("r2secr : bad magic, no secrets structure found \n") ;
+				return -ENODEV;
+		}
+
 		printk("r2secr_struct->items : %lx \n" , (unsigned long ) r2secr_struct->items ) ;
 
 		Rip2SecretsItem *nextFreeItem = r2secr_struct->items;
